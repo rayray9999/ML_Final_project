@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
-from sklearn.impute import KNNImputer
+from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.linear_model import LogisticRegression, HuberRegressor
 from sklearn.preprocessing import StandardScaler
 import pickle
@@ -69,10 +69,12 @@ def preprocess(data):
         correlated_measurement = m17_corre[p_code]
         c_data_nona = c_data[correlated_measurement+['measurement_17']].dropna()
         c_data_miss_only_m17 = c_data[(~c_data[correlated_measurement].isnull().any(axis=1)) & (c_data['measurement_17'].isnull())]
-        model = HuberRegressor()
+        model = HuberRegressor(epsilon=2)
         model.fit(c_data_nona[correlated_measurement], c_data_nona['measurement_17'])
         data.loc[(data.product_code==p_code)&(~c_data[correlated_measurement].isnull().any(axis=1))&(data['measurement_17'].isnull()), 'measurement_17'] = model.predict(c_data_miss_only_m17[correlated_measurement])
         for_rest = KNNImputer(n_neighbors=3)
+        #for_rest = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+        data.loc[data.product_code==p_code, correlated_measurement+['measurement_17']] = for_rest.fit_transform(data.loc[data.product_code==p_code, correlated_measurement+['measurement_17']])
         data.loc[data.product_code==p_code, feature] = for_rest.fit_transform(data.loc[data.product_code==p_code, feature])
         #for i in range(3,17):
             #data[data.product_code==code][f'measurement_{i}'].fillna(value=data[data.product_code==code][f'measurement_{i}'].mean(), inplace=True)

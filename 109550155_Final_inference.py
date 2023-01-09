@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 import os
-from sklearn.impute import KNNImputer
+from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.linear_model import LogisticRegression, HuberRegressor
 from sklearn.preprocessing import StandardScaler
 import pickle
 #print(pickle.format_version)
-WEIGHT_PATH=""
-TEST_PATH = "tabular-playground-series-aug-2022"
-SUBMISSION_PATH="tabular-playground-series-aug-2022"
+WEIGHT_PATH="" #for weight path
+TEST_PATH = "tabular-playground-series-aug-2022" #for test.csv path
+SUBMISSION_PATH="tabular-playground-series-aug-2022" #for sample_submission.csv path
 
 submission = pd.read_csv(os.path.join(SUBMISSION_PATH, 'sample_submission.csv'))
 test_df = pd.read_csv(os.path.join(TEST_PATH, 'test.csv'))
@@ -67,10 +67,12 @@ def preprocess(data):
         correlated_measurement = m17_corre[p_code]
         c_data_nona = c_data[correlated_measurement+['measurement_17']].dropna()
         c_data_miss_only_m17 = c_data[(~c_data[correlated_measurement].isnull().any(axis=1)) & (c_data['measurement_17'].isnull())]
-        model = HuberRegressor()
+        model = HuberRegressor(epsilon=2)
         model.fit(c_data_nona[correlated_measurement], c_data_nona['measurement_17'])
         data.loc[(data.product_code==p_code) & (~c_data[correlated_measurement].isnull().any(axis=1)) & (data['measurement_17'].isnull()), 'measurement_17'] = model.predict(c_data_miss_only_m17[correlated_measurement])
+        #for_rest = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
         for_rest = KNNImputer(n_neighbors=3)
+        data.loc[data.product_code==p_code, correlated_measurement+['measurement_17']] = for_rest.fit_transform(data.loc[data.product_code==p_code, correlated_measurement+['measurement_17']])
         data.loc[data.product_code==p_code, feature] = for_rest.fit_transform(data.loc[data.product_code==p_code, feature])
         #for i in range(3,17):
             #data[data.product_code==code][f'measurement_{i}'].fillna(value=data[data.product_code==code][f'measurement_{i}'].mean(), inplace=True)
@@ -79,7 +81,6 @@ def preprocess(data):
 
 test=preprocess(test_x)
 select_feature = ['measurement_1','measurement_10','measurement_17', 'm3_missing', 'm5_missing', 'loading', 'area']
-test_result = np.zeros(len(test))
 
 print("--start Standardize--")
 sc = StandardScaler()
