@@ -1,5 +1,5 @@
 # ML_Final_project
-這是一個關於[kaggle競賽](https://www.kaggle.com/competitions/tabular-playground-series-aug-2022/overview)的作品呈現，透過以下流程能成功復現。
+這是一個關於[kaggle競賽](https://www.kaggle.com/competitions/tabular-playground-series-aug-2022/overview)的作品呈現，透過以下流程能成功復現，程式碼解釋以及相關實驗可以詳見`109550155_Final.pdf`。
 
 
 ## Menu
