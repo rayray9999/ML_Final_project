@@ -6,10 +6,9 @@ from sklearn.linear_model import LogisticRegression, HuberRegressor
 from sklearn.preprocessing import StandardScaler
 import pickle
 
-TRAIN_PATH = "tabular-playground-series-aug-2022"
+TRAIN_PATH = "tabular-playground-series-aug-2022" #for train.csv
 
 train_df = pd.read_csv(os.path.join(TRAIN_PATH, 'train.csv'))
-
 train_x = train_df.drop('id', axis=1) #useless
 train_x = train_x.drop('failure', axis=1) #for y
 train_y = train_df['failure']
@@ -59,10 +58,14 @@ def preprocess(data):
         'D': ['measurement_5', 'measurement_6', 'measurement_7', 'measurement_8'],
         'E': ['measurement_4', 'measurement_5', 'measurement_6', 'measurement_8']
     }
-    data['loading'] = np.log1p(data['loading'])
+    # Create new features
     data['m3_missing'] = data.measurement_3.isna().astype('int64')
     data['m5_missing'] = data.measurement_5.isna().astype('int64')
     data['area'] = data['attribute_2'] * data['attribute_3']
+    #standerdize loading
+    data['loading'] = np.log1p(data['loading'])
+    
+    # Impute missing values
     for p_code in data.product_code.unique():
         print("start processing product_code:",p_code)
         c_data = data[data.product_code==p_code]
@@ -84,10 +87,15 @@ def preprocess(data):
 train=preprocess(train_x)
 
 select_feature = ['measurement_1','measurement_10','measurement_17', 'm3_missing', 'm5_missing', 'loading', 'area']
+# Scale features
 sc = StandardScaler()
-train_x = sc.fit_transform(train[select_feature]) 
+train_x = sc.fit_transform(train[select_feature])
+
+# Fit logistic regression model
 model = LogisticRegression(max_iter=500, C=0.0001, penalty='l2', solver='newton-cg') 
 model.fit(train_x, train_y)
+
+#save the weight
 model_file = open('logistic_regression.sav', 'wb')
 pickle.dump(model, model_file)
 model_file.close()
