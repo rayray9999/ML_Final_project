@@ -13,6 +13,7 @@
 
 
 ## installation
+我採用的python version為`3.9.7`。
 首先下載`109550155_Final_train.py`、`109550155_Final_test.py`、`requirements.txt`，接著用以下指令以符合執行環境。
 ```bash
 pip install -r requirements.txt
