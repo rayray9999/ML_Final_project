@@ -36,5 +36,5 @@ python 109550155_Final_train.py
 python 109550155_Final_inference.py 
 ```
 可以得到`109550155.csv`，即可在kaggle競賽上繳交並獲得以下結果：
-
+![](figure/result.png)
 
